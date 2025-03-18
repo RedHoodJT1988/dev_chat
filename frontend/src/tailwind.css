@@ -1,9 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@reference "tailwindcss";
 
 :root {
+  --appbar-height: 3.5rem;
+  --navbar-height: 3.8rem;
+  --content-min-width: 300px;
+  --content-max-width: 576px;
+  --sidebar-width: 250px;
 }
 
 @layer components {
+
+  .btn {
+    @apply px-4 py-2 rounded font-semibold text-sm bg-slate-600 shadow-sm text-white;
+  }
 }
