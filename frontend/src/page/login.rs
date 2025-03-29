@@ -85,17 +85,16 @@ pub fn UsernameInput<'a>(
     })
 }
 
-pub fn LoginLink(cx: Scope) -> Element {
+pub fn RegisterLink(cx: Scope) -> Element {
     cx.render(rsx! {
         Link {
             class: "link text-center",
-            to: page::ACCOUNT_LOGIN,
-            "Existing User Login"
+            to: page::ACCOUNT_REGISTER,
+            "Create Account"
         }
     })
 }
-
-pub fn Register(cx: Scope) -> Element {
+pub fn Login(cx: Scope) -> Element {
     let api_client = ApiClient::global();
     let page_state = PageState::new(cx);
     let page_state = use_ref(cx, || page_state);
@@ -106,10 +105,10 @@ pub fn Register(cx: Scope) -> Element {
         &cx,
         [api_client, page_state, router, local_profile],
         move |_| async move {
-            use uchat_endpoint::user::endpoint::{CreateUser, CreateUserOk};
+            use uchat_endpoint::user::endpoint::{Login, LoginOk};
             let request_data = {
                 use uchat_domain::{Password, Username};
-                CreateUser {
+                Login {
                     username: Username::new(
                         page_state.with(|state| state.username.current().to_string()),
                     )
@@ -120,7 +119,7 @@ pub fn Register(cx: Scope) -> Element {
                     .unwrap(),
                 }
             };
-            let response = fetch_json!(<CreateUserOk>, api_client, request_data);
+            let response = fetch_json!(<LoginOk>, api_client, request_data);
             match response {
                 Ok(res) => {
                     crate::util::cookie::set_session(
@@ -128,6 +127,7 @@ pub fn Register(cx: Scope) -> Element {
                         res.session_id,
                         res.session_expires,
                     );
+                    local_profile.write().image = res.profile_image;
                     local_profile.write().user_id = Some(res.user_id);
                     router.navigate_to(page::HOME)
                 }
@@ -165,7 +165,7 @@ pub fn Register(cx: Scope) -> Element {
             onsubmit: form_onsubmit,
 
             KeyedNotificationBox {
-                legend: "Registration Errors",
+                legend: "Login Errors",
                 notifications: page_state.clone().with(|state| state.server_messages.clone()),
             }
 
@@ -178,7 +178,9 @@ pub fn Register(cx: Scope) -> Element {
                 state: page_state.with(|state| state.password.clone()),
                 oninput: password_oninput,
             },
-            LoginLink {},
+
+            RegisterLink {},
+
             KeyedNotificationBox {
                 legend: "Form Errors",
                 notifications: page_state.clone().with(|state| state.form_errors.clone()),
@@ -188,7 +190,7 @@ pub fn Register(cx: Scope) -> Element {
                 class: "btn {submit_btn_style}",
                 r#type: "submit",
                 disabled: !page_state.with(|state| state.can_submit()),
-                "Signup"
+                "Login"
             }
         }
     })

@@ -6,11 +6,13 @@
 pub mod util;
 
 pub mod app;
+pub mod elements;
 pub mod page;
 
 use cfg_if::cfg_if;
+use util::ApiClient;
 
-pub const ROOT_API_URL: &str = "http://127.0.0.1:8070/";
+pub const ROOT_API_URL: &str = uchat_endpoint::app_url::API_URL;
 
 cfg_if! {
     if #[cfg(feature = "console_log")] {
@@ -25,9 +27,23 @@ cfg_if! {
 
 fn main() {
     init_log();
+    ApiClient::init();
     dioxus_web::launch(app::App)
 }
 
 mod prelude {
     pub use crate::page;
+
+    pub use crate::util::api_client::fetch_json;
+    pub use crate::util::ApiClient;
+    pub use crate::util::{async_handler, maybe_class, sync_handler};
+
+    pub use crate::elements::appbar::{self, Appbar, AppbarImgButton};
+    pub use crate::elements::local_profile::{use_local_profile, LocalProfile};
+    pub use crate::elements::post::use_post_manager;
+    pub use crate::elements::post::PublicPostEntry;
+    pub use crate::elements::sidebar::{use_sidebar, Sidebar, SidebarManager};
+    pub use crate::elements::toaster::use_toaster;
+
+    pub use dioxus_router::{use_route, use_router};
 }
